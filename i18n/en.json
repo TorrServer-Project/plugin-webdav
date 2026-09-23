@@ -1,0 +1,16 @@
+{
+  "plugin.webdav.page_title": "WebDAV - Silo",
+  "plugin.webdav.title": "WebDAV",
+  "plugin.webdav.back": "Back",
+  "plugin.webdav.url_title": "Server address",
+  "plugin.webdav.url_hint": "Use this URL in your WebDAV client:",
+  "plugin.webdav.password_title": "Password",
+  "plugin.webdav.password_hint": "Set a password for WebDAV access. Username is the same as your account.",
+  "plugin.webdav.save": "Save",
+  "plugin.webdav.remove": "Remove",
+  "plugin.webdav.password_set": "Password is set",
+  "plugin.webdav.password_not_set": "Password is not set. WebDAV is disabled.",
+  "plugin.webdav.saved": "Saved",
+  "plugin.webdav.removed": "Removed",
+  "plugin.webdav.enter_password": "Enter a password"
+}

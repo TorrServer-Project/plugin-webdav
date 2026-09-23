@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="plugin.webdav.page_title">WebDAV - Silo</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+    <link rel="manifest" href="/img/site.webmanifest">
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/i18n.js"></script>
+    <style>
+        .page-wrap {
+            display: flex;
+            justify-content: center;
+            padding: 24px 32px;
+            min-height: 100vh;
+        }
+        .page-inner {
+            width: 100%;
+            max-width: 800px;
+        }
+        .panel {
+            max-width: 100%;
+        }
+        .dav-url {
+            display: block;
+            background: var(--silo-bg-raised);
+            border: 1px solid var(--silo-border);
+            border-radius: 6px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--silo-amber);
+            user-select: all;
+            word-break: break-all;
+        }
+        @media (max-width: 767px) {
+            .page-wrap {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-wrap">
+    <div class="page-inner">
+        <header class="topbar">
+            <h1 id="page-title" data-i18n="plugin.webdav.title">WebDAV</h1>
+            <a href="/" class="btn btn-secondary btn-sm" data-i18n="plugin.webdav.back">Back</a>
+        </header>
+
+        <section id="view">
+            <div class="panel">
+                <h2 data-i18n="plugin.webdav.url_title">Server address</h2>
+                <p class="hint" data-i18n="plugin.webdav.url_hint">Use this URL in your WebDAV client:</p>
+                <code class="dav-url" id="dav-url">...</code>
+            </div>
+
+            <div class="panel">
+                <h2 data-i18n="plugin.webdav.password_title">Password</h2>
+                <p class="hint" data-i18n="plugin.webdav.password_hint">Set a password for WebDAV access. Username is the same as your account.</p>
+                <div class="row">
+                    <input class="input" type="password" id="password-input" autocomplete="new-password" placeholder="Password" style="flex: 1 1 240px;">
+                    <button class="btn" id="btn-save" type="button" data-i18n="plugin.webdav.save">Save</button>
+                    <button class="btn btn-secondary" id="btn-remove" type="button" data-i18n="plugin.webdav.remove">Remove</button>
+                </div>
+                <p class="hint" id="status-text"></p>
+            </div>
+        </section>
+    </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="/plugins/webdav/js/app.js"></script>
+</body>
+</html>

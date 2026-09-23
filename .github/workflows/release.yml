@@ -1,0 +1,151 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - '*'   # тег = version из info.yaml, любой формат
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Read info.yaml
+        id: meta
+        run: |
+          python3 - <<'PY'
+          import os, yaml, sys
+          info_path = None
+          for root, dirs, files in os.walk('.'):
+              dirs[:] = [d for d in dirs if d not in ('.git',)]
+              if 'info.yaml' in files:
+                  info_path = os.path.join(root, 'info.yaml')
+                  break
+          if not info_path:
+              sys.exit('::error::info.yaml not found')
+          with open(info_path, encoding='utf-8') as f:
+              info = yaml.safe_load(f)
+
+          plugin_dir = os.path.dirname(info_path) or '.'
+          icon_rel   = (info.get('icon') or '').lstrip('/')
+
+          out = {
+              'plugin_dir':  plugin_dir,
+              'id':          info['id'],
+              'name':        info['name'],
+              'version':     info['version'],
+              'author':      info.get('author', ''),
+              'description': info.get('description', ''),
+              'icon_rel':    icon_rel,
+          }
+          if info.get('min_silo_version'):
+              out['min_silo'] = info['min_silo_version']
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as f:
+              for k, v in out.items():
+                  f.write(f'{k}={v}\n')
+          PY
+
+      - name: Validate tag vs version
+        run: |
+          TAG="${{ github.ref_name }}"
+          INFO="${{ steps.meta.outputs.version }}"
+          if [ "$TAG" != "$INFO" ]; then
+            echo "::error::Тег '$TAG' не совпадает с version='$INFO' в info.yaml"
+            exit 1
+          fi
+
+      - name: Build ZIP
+        id: build
+        run: |
+          ID="${{ steps.meta.outputs.id }}"
+          VERSION="${{ steps.meta.outputs.version }}"
+          PLUGIN_DIR="${{ steps.meta.outputs.plugin_dir }}"
+
+          ZIP_NAME="${ID}-v${VERSION}.zip"
+
+          (cd "$PLUGIN_DIR" && zip -r "$GITHUB_WORKSPACE/$ZIP_NAME" . \
+            -x ".*" \
+            -x "*/.*" \
+            -x "__MACOSX/*" \
+            -x "*.DS_Store")
+
+          SIZE=$(stat -c%s "$ZIP_NAME")
+          SHA256=$(sha256sum "$ZIP_NAME" | awk '{print $1}')
+
+          {
+            echo "zip_name=$ZIP_NAME"
+            echo "size=$SIZE"
+            echo "sha256=$SHA256"
+          } >> $GITHUB_OUTPUT
+
+      - name: Generate info.json
+        env:
+          ID:          ${{ steps.meta.outputs.id }}
+          NAME:        ${{ steps.meta.outputs.name }}
+          VERSION:     ${{ steps.meta.outputs.version }}
+          AUTHOR:      ${{ steps.meta.outputs.author }}
+          DESCRIPTION: ${{ steps.meta.outputs.description }}
+          MIN_SILO:    ${{ steps.meta.outputs.min_silo }}
+          ICON_REL:    ${{ steps.meta.outputs.icon_rel }}
+          ZIP_NAME:    ${{ steps.build.outputs.zip_name }}
+          SIZE:        ${{ steps.build.outputs.size }}
+          SHA256:      ${{ steps.build.outputs.sha256 }}
+        run: |
+          python3 - <<'PY'
+          import json, os
+
+          repo = os.environ['GITHUB_REPOSITORY']  # YouROK/tracker-manager
+          tag  = os.environ['GITHUB_REF_NAME']    # 0.0.3
+
+          base     = f"https://github.com/{repo}/releases/download/{tag}"
+          icon_rel = os.environ.get('ICON_REL', '').strip()
+          icon_url = (
+              f"https://raw.githubusercontent.com/{repo}/{tag}/{icon_rel}"
+              if icon_rel else ""
+          )
+
+          info = {
+              "id":           os.environ['ID'],
+              "name":         os.environ['NAME'],
+              "version":      os.environ['VERSION'],
+              "author":       os.environ['AUTHOR'],
+              "description":  os.environ['DESCRIPTION'],
+              "icon":         icon_url,
+              "download_url": f"{base}/{os.environ['ZIP_NAME']}",
+              "size":         int(os.environ['SIZE']),
+              "sha256":       os.environ['SHA256'],
+              "homepage":     f"https://github.com/{repo}",
+          }
+
+          min_silo = os.environ.get('MIN_SILO', '').strip()
+          if min_silo:
+              info["min_silo_version"] = min_silo
+
+          with open('info.json', 'w', encoding='utf-8') as f:
+              json.dump(info, f, indent=2, ensure_ascii=False)
+              f.write('\n')
+          PY
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.meta.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          files: |
+            ${{ steps.build.outputs.zip_name }}
+            info.json
+          generate_release_notes: true

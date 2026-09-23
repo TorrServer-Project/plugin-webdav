@@ -1,0 +1,23 @@
+id: "webdav"
+name: "WebDAV"
+version: "0.0.1"
+author: "YouROK"
+description: "Read-only WebDAV access to your torrent library"
+entry: "service.js"
+icon: "/img/ico-webdav.svg"
+
+menu:
+  - title: "WebDAV"
+    title_key: "plugin.webdav.title"
+    route: "/"
+    icon: "/img/ico-webdav.svg"
+
+routes:
+  - "/"
+  - "/index.html"
+  - "/js/*"
+  - "/img/*"
+  - "/api/status"
+  - "/api/password"
+  - "/api/password/remove"
+  - "/dav/*"
