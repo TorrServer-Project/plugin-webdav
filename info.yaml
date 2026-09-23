@@ -1,6 +1,6 @@
 id: "webdav"
 name: "WebDAV"
-version: "0.0.1"
+version: "1.0.0"
 author: "YouROK"
 description: "Read-only WebDAV access to your torrent library"
 entry: "service.js"
