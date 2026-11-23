@@ -4,12 +4,22 @@ function t(key, def) {
     return (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key, def) : key;
 }
 
+// showToast добавляет уведомление в общий контейнер: оформление
+// и анимацию задает общий стиль.
 function showToast(msg, type) {
-    var el = document.getElementById('toast');
-    if (!el) return;
+    var root = document.getElementById('toast-root');
+    if (!root) return;
+
+    var el = document.createElement('div');
+    el.className = 'toast toast-' + (type || 'info');
     el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(function() { el.classList.remove('show'); }, 2500);
+    root.appendChild(el);
+
+    requestAnimationFrame(function() { el.classList.add('toast-show'); });
+    setTimeout(function() {
+        el.classList.remove('toast-show');
+        setTimeout(function() { el.remove(); }, 300);
+    }, 2500);
 }
 
 function setText(id, text) {

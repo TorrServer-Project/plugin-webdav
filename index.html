@@ -36,9 +36,24 @@
             user-select: all;
             word-break: break-all;
         }
+        /* Строка пароля: поле тянется, кнопки остаются по размеру текста */
+        .dav-row {
+            margin-top: 12px;
+        }
         @media (max-width: 767px) {
             .page-wrap {
-                padding: 16px;
+                padding: 12px;
+            }
+            /* Поле и кнопки встают в колонку: иначе flex-basis поля
+               превращается в высоту и поле растягивается */
+            .dav-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .dav-row > .input,
+            .dav-row > .btn {
+                flex: 0 0 auto;
+                width: 100%;
             }
         }
     </style>
@@ -61,8 +76,8 @@
             <div class="panel">
                 <h2 data-i18n="plugin.webdav.password_title">Password</h2>
                 <p class="hint" data-i18n="plugin.webdav.password_hint">Set a password for WebDAV access. Username is the same as your account.</p>
-                <div class="row">
-                    <input class="input" type="password" id="password-input" autocomplete="new-password" placeholder="Password" style="flex: 1 1 240px;">
+                <div class="row dav-row">
+                    <input class="input" type="password" id="password-input" autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Password">
                     <button class="btn" id="btn-save" type="button" data-i18n="plugin.webdav.save">Save</button>
                     <button class="btn btn-secondary" id="btn-remove" type="button" data-i18n="plugin.webdav.remove">Remove</button>
                 </div>
@@ -72,7 +87,7 @@
     </div>
 </div>
 
-<div id="toast" class="toast"></div>
+<div id="toast-root" class="toast-root"></div>
 
 <script src="/plugins/webdav/js/app.js"></script>
 </body>
